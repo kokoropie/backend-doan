@@ -20,7 +20,9 @@ class ClassScoreExport implements WithMultipleSheets
     public function sheets(): array
     {
         $sheets = [];
-        $this->class->load(['students', 'subjects']);
+        $this->class->load(['students' => function ($query) {
+            $query->orderBy('first_name')->orderBy('last_name');
+        }, 'subjects']);
         $this->class->loadCount('students');
         $this->css = $this->class->subjectsWithMore()->pluck('id');
         $this->students = $this->class->students;
