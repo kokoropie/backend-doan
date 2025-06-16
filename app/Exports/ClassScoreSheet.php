@@ -2,24 +2,17 @@
 
 namespace App\Exports;
 
-use App\Enums\ScoreType;
-use App\Models\ClassModel;
-use App\Models\Score;
-use App\Models\Subject;
-use App\Models\User;
-use App\Services\ScoreService;
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 
-class ClassScoreSheet implements FromArray, WithHeadings, WithTitle
+class ClassScoreSheet implements FromArray, WithHeadings, WithTitle, ShouldAutoSize
 {
     public function __construct(
-        private ClassModel $class,
-        private User $student,
-        private $subjects,
-        private $allScores,
-        private $css
+        private $name,
+        private $data,
+        private $ranks
     ) {}
 
     public function headings(): array
@@ -38,67 +31,26 @@ class ClassScoreSheet implements FromArray, WithHeadings, WithTitle
 
     public function array(): array
     {
-        $return = [];
+        $return = $this->data;
+        $r = [];
+        foreach ($return as $key => $item) {
+            [$subject, $id] = explode("_", array_pop($item));
+            array_pop($item);
+            $rank = collect($this->ranks[$subject] ?? [])
+                ->firstWhere('id', $id);
+            $item[] = $rank['score'] ?? '';
+            $item[] = $rank['rank'] ?? '';
 
-        $scores = $this->student->scores()
-            ->with(['subject'])
-            ->whereIn('class_subject_semester_id', $this->css)
-            ->get();
-
-        $return = [];
-
-        $allScores = $this->allScores;
-
-        foreach ($scores as $score) {
-            if (!isset($return[$score->subject->id])) {
-                $return[$score->subject->id] = [];
-                $avgScore = resolve(ScoreService::class)->getAvg($allScores[$score->class_subject_semester_id] ?? collect());
-                $return[$score->subject->id . '_avg'] = $avgScore;
-                $return[$score->subject->id . '_student_avg'] = resolve(ScoreService::class)->getAvg($scores->where(fn ($item) => $item->subject->id == $score->subject->id) ?? collect());
+            $r[$key] = [];
+            foreach ($this->headings() as $k => $heading) {
+                $r[$key][$heading] = $item[$k] ?? '';
             }
-            $type = $score->type;
-            if ($type instanceof ScoreType) {
-                $type = $type->value;
-            }
-            if (!isset($return[$score->subject->id][$type])) {
-                $return[$score->subject->id][$type] = [];
-            }
-            $return[$score->subject->id][$type][] = [
-                'id' => $score->id,
-                'score' => $score->score
-            ];
         }
-
-        $results = [];
-
-        foreach ($this->subjects as $subject) {
-            $subjectScores = $return[$subject->id] ?? [];
-            $avgScore = $return[$subject->id . '_avg'] ?? 0;
-            $studentAvgScore = $return[$subject->id . '_student_avg'] ?? 0;
-            if ($avgScore) {
-                $rank = floor((1 - $studentAvgScore / $avgScore) * $this->class->students_count);
-                $rank = $rank < 1 ? 1 : $rank;
-            } else {
-                $rank = 0;
-            }
-
-            $results[] = [
-                $this->headings()[0] => $subject->name,
-                $this->headings()[1] => isset($subjectScores['other']) ? implode('|', array_column($subjectScores['other'], 'score')) : '',
-                $this->headings()[2] => isset($subjectScores['short_test']) ? implode('|', array_column($subjectScores['short_test'], 'score')) : '',
-                $this->headings()[3] => isset($subjectScores['long_test']) ? implode('|', array_column($subjectScores['long_test'], 'score')) : '',
-                $this->headings()[4] => isset($subjectScores['midterm']) ? implode('|', array_column($subjectScores['midterm'], 'score')) : '',
-                $this->headings()[5] => isset($subjectScores['final']) ? implode('|', array_column($subjectScores['final'], 'score')) : '',
-                $this->headings()[6] => $studentAvgScore,
-                $this->headings()[7] => $rank
-            ];
-        }
-        
-        return $results;
+        return $r;
     }
 
     public function title(): string
     {
-        return $this->student->full_name;
+        return $this->name;
     }
 }
