@@ -1,0 +1,10 @@
+<?php
+namespace App\Services{{ namespace }};{{ useBaseService }}
+
+class {{ class }} extends BaseService
+{
+    public function __construct()
+    {
+        parent::__construct();
+    }
+}
