@@ -54,6 +54,7 @@ class ClassScoreSheet implements FromArray, WithHeadings, WithTitle
                 $return[$score->subject->id] = [];
                 $avgScore = resolve(ScoreService::class)->getAvg($allScores[$score->class_subject_semester_id] ?? collect());
                 $return[$score->subject->id . '_avg'] = $avgScore;
+                $return[$score->subject->id . '_student_avg'] = resolve(ScoreService::class)->getAvg($scores->where(fn ($item) => $item->subject->id == $score->subject->id) ?? collect());
             }
             $type = $score->type;
             if ($type instanceof ScoreType) {
@@ -73,8 +74,13 @@ class ClassScoreSheet implements FromArray, WithHeadings, WithTitle
         foreach ($this->subjects as $subject) {
             $subjectScores = $return[$subject->id] ?? [];
             $avgScore = $return[$subject->id . '_avg'] ?? 0;
-            $rank = round((1 - $avgScore / $this->class->avg_score) * $this->class->students_count, 2);
-            $rank = $rank < 1 ? 1 : $rank;
+            $studentAvgScore = $return[$subject->id . '_student_avg'] ?? 0;
+            if ($avgScore) {
+                $rank = floor((1 - $studentAvgScore / $avgScore) * $this->class->students_count);
+                $rank = $rank < 1 ? 1 : $rank;
+            } else {
+                $rank = 0;
+            }
 
             $results[] = [
                 $this->headings()[0] => $subject->name,
@@ -83,7 +89,7 @@ class ClassScoreSheet implements FromArray, WithHeadings, WithTitle
                 $this->headings()[3] => isset($subjectScores['long_test']) ? implode('|', array_column($subjectScores['long_test'], 'score')) : '',
                 $this->headings()[4] => isset($subjectScores['midterm']) ? implode('|', array_column($subjectScores['midterm'], 'score')) : '',
                 $this->headings()[5] => isset($subjectScores['final']) ? implode('|', array_column($subjectScores['final'], 'score')) : '',
-                $this->headings()[6] => $avgScore,
+                $this->headings()[6] => $studentAvgScore,
                 $this->headings()[7] => $rank
             ];
         }

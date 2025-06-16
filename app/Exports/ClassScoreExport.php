@@ -16,9 +16,7 @@ class ClassScoreExport implements WithMultipleSheets
     public function sheets(): array
     {
         $sheets = [];
-        $this->class->load(['students' => function ($query) {
-            $query->limit(10);
-        }, 'subjects']);
+        $this->class->load(['students', 'subjects']);
         $this->class->loadCount('students');
         $css = $this->class->subjectsWithMore()->pluck('id');
         $allScores = Score::whereIn('class_subject_semester_id', $css)
