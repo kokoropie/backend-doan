@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\NotificationResource;
 use App\Models\ClassModel;
 use App\Models\ClassSubjectSemester;
 use App\Models\Notification;
@@ -21,9 +22,10 @@ class NotificationController extends Controller
         $notifications = $this->_USER->receivedNotifications()
             ->with(['sender'])
             ->withPivot('is_read')
-            ->latest();
+            ->latest()
+            ->get();
 
-        return response()->success($notifications, 'Lấy thông báo thành công');
+        return response()->success(NotificationResource::collection($notifications), 'Lấy thông báo thành công');
     }
 
     /**

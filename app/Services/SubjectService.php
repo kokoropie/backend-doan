@@ -29,7 +29,7 @@ class SubjectService extends BaseService
             $query->where('teacher_id', $this->getUser()->id);
         })->when($request->has('semester'), function ($query) use ($request) {
             $query->where('semester_id', $request->semester);
-        }), $request);
+        })->distinct(), $request);
     }
 
     public function addClass(StoreSubjectRequest $request, ClassModel $class)

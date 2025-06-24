@@ -51,4 +51,13 @@ class Notification extends Model
     {
         return $query->where('is_read', false);
     }
+
+    public function getIsReadAttribute()
+    {
+        if ($this->pivot) {
+            return $this->pivot->is_read ?? false;
+        }
+
+        return false;
+    }
 }

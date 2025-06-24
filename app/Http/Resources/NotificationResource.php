@@ -21,8 +21,8 @@ class NotificationResource extends JsonResource
             'message' => $this->message,
             'receiver_type' => $this->receiver_type,
             'is_read' => $this->is_read ?? false,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'created_at' => $this->created_date,
+            'updated_at' => $this->updated_date,
         ];
     }
 }
