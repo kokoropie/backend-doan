@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if (config('app.debug')) { 
-            \DB::enableQueryLog();
+            // \DB::enableQueryLog();
         }
 
         Response::macro('success', function (mixed $data = [], string $message = 'Success', $code = 200): mixed {
@@ -34,8 +34,8 @@ class AppServiceProvider extends ServiceProvider
         });
 
         app()->terminating(function () {
-            \Log::debug(array_reduce(\DB::getRawQueryLog(), fn ($c, $i) => $c .= $i['raw_query'] . PHP_EOL, ''));
-            \DB::disableQueryLog();
+            // \Log::debug(array_reduce(\DB::getRawQueryLog(), fn ($c, $i) => $c .= $i['raw_query'] . PHP_EOL, ''));
+            // \DB::disableQueryLog();
         });
     }
 }
