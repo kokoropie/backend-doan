@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ClassController;
 use App\Http\Controllers\Api\ClassScoreController;
 use App\Http\Controllers\Api\ClassSubjectController;
 use App\Http\Controllers\Api\Dashboard\AdminController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\SemesterController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\UserController;
@@ -35,4 +36,6 @@ Route::prefix('admin')->name('admin.')->middleware(['role:admin'])->group(functi
     Route::post('users/{user}/class', [UserController::class, 'changeClass'])->name('users.change-class');
 
     Route::apiResource('users.scores', UserScoreController::class)->only('index');
+
+    Route::apiResource('notifications', NotificationController::class);
 });

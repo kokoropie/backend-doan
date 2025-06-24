@@ -13,7 +13,12 @@ class NotificationController extends Controller
      */
     public function index()
     {
-        //
+        $notifications = $this->_USER->receivedNotifications()
+            ->with(['sender'])
+            ->withPivot('is_read')
+            ->latest();
+
+        return response()->success($notifications, 'Lấy thông báo thành công');
     }
 
     /**
