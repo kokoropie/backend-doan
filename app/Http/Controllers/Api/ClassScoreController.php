@@ -96,9 +96,12 @@ class ClassScoreController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(ClassModel $class, string $id)
     {
-        //
+        $score = Score::findOrFail($id);
+        $score->delete();
+
+        return response()->success($score, 'Xoá điểm thành công');
     }
 
     public function excel(Request $request, ClassModel $class)
