@@ -14,6 +14,8 @@ Route::prefix('admin')->name('admin.')->middleware(['role:admin'])->group(functi
     Route::prefix('dashboard')->name('dashboard.')->group(function () {
         Route::get('count', [AdminController::class, 'count'])->name('count');
         Route::get('top-score', [AdminController::class, 'topScore'])->name('top-score');
+        Route::get('feedback', [AdminController::class, 'feedback'])->name('feedback');
+        Route::get('students', [AdminController::class, 'students'])->name('students');
     });
     Route::apiResource('academic-years', AcademicYearController::class);
     Route::post('academic-years/{academicYear}/set-year', [AcademicYearController::class, 'setYear'])->name('academic-years.set-year');

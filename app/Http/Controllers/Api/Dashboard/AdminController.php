@@ -9,6 +9,7 @@ use App\Models\Feedback;
 use App\Models\Notification;
 use App\Models\User;
 use App\Services\AcademicYearService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -87,5 +88,39 @@ class AdminController extends Controller
         $return = array_slice($return, 0, 10);
 
         return response()->success($return, 'Lấy danh sách điểm cao nhất thành công');
+    }
+
+    public function feedback()
+    {
+        $year = request()->has('year') ? request()->get('year') : now()->year;
+        $from = now()->setYear($year)->startOfYear();
+        $to = now()->setYear($year)->endOfYear();
+        $feedbacks = Feedback::whereBetween('created_at', [$from, $to])
+            ->groupByRaw('MONTH(created_at)')
+            ->count();
+
+        $return = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $return[$i] = [
+                'key' => $i,
+                'value' => $feedbacks[$i] ?? 0
+            ];
+        }
+
+        return response()->success(array_values($return), 'Lấy thống kê phản hồi thành công');
+    }
+
+    public function students()
+    {
+        $years = AcademicYear::withCount('students')->orderBy('from')->orderBy('to')->get();
+        
+        $return = $years->map(function ($year) {
+            return [
+                'key' => $year->year,
+                'value' => $year->students_count
+            ];
+        });
+
+        return response()->success($return->toArray(), 'Lấy thống kê học sinh thành công');
     }
 }
