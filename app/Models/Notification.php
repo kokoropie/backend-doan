@@ -19,12 +19,14 @@ class Notification extends Model
         'message',
         'receiver_type',
         'sender_id',
+        'is_read',
     ];
 
     protected function casts()
     {
         return [
             'receiver_type' => ReceiverType::class,
+            'is_read' => 'boolean',
         ];
     }
 
@@ -43,5 +45,10 @@ class Notification extends Model
             'id',
             'user_id'
         );
+    }
+
+    public function scopeUnread($query)
+    {
+        return $query->where('is_read', false);
     }
 }

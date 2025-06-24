@@ -34,6 +34,7 @@ class UserResource extends JsonResource
             'children_count' => $this->whenCounted('children'),
             'sent_feedback_count' => $this->whenCounted('sentFeedback'),
             'received_feedback_count' => $this->whenCounted('receivedFeedback'),
+            'received_notifications_count' => $this->whenCounted('receivedNotifications'),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
