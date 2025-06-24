@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\FeedbackController;
 use App\Http\Controllers\Api\ScoreController;
 use App\Http\Controllers\Api\SemesterController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\UserScoreController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('teacher')->name('teacher.')->middleware(['role:teacher'])->group(function () {
@@ -27,6 +28,7 @@ Route::prefix('teacher')->name('teacher.')->middleware(['role:teacher'])->group(
 
     Route::apiResource('users', UserController::class)->only(['index', 'show']);
     Route::apiResource('scores', ScoreController::class);
+    Route::apiResource('users.scores', UserScoreController::class)->only('index');
 
     Route::apiResource('feedback', FeedbackController::class)->except(['store']);
 });

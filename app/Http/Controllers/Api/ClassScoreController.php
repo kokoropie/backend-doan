@@ -6,6 +6,7 @@ use App\Exports\ClassScoreExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ListResourceRequest;
 use App\Models\ClassModel;
+use App\Models\ClassSubjectSemester;
 use App\Models\Score;
 use App\Models\Subject;
 use App\Services\BaseService;
@@ -19,14 +20,23 @@ class ClassScoreController extends Controller
      */
     public function index(ListResourceRequest $request, ClassModel $class)
     {
+        $links = ClassSubjectSemester::select(
+            'subjects.name', 
+            'subjects.id as subject_id', 
+            'class_subject_semester.teacher_id',
+            'class_subject_semester.id as linked_id'
+        )->rightJoin('subjects', 'subjects.id', '=', 'class_subject_semester.subject_id')
+        ->where('class_subject_semester.class_id', $class->id)
+        ->where('class_subject_semester.semester_id', $request->get('semester_id'))
+        ->orderBy('subjects.name');
+
         $scores = Score::select(
                 'scores.*', 
                 'subjects.name', 
                 'subjects.id as subject_id', 
                 'class_subject_semester.teacher_id',
-                'class_subject_semester.id as link_id'
-            )
-            ->rightJoin('class_subject_semester', 'class_subject_semester.id', '=', 'scores.class_subject_semester_id')
+                'class_subject_semester.id as linked_id'
+            )->rightJoin('class_subject_semester', 'class_subject_semester.id', '=', 'scores.class_subject_semester_id')
             ->rightJoin('subjects', 'subjects.id', '=', 'class_subject_semester.subject_id')
             ->where('class_subject_semester.class_id', $class->id)
             ->where('class_subject_semester.semester_id', $request->get('semester_id'))
@@ -36,10 +46,34 @@ class ClassScoreController extends Controller
         if ($this->_USER->isTeacher()) {
             if ($class->teacher_id != $this->_USER->id) {
                 $scores->where('class_subject_semester.teacher_id', $this->_USER->id);
+                $links->where('class_subject_semester.teacher_id', $this->_USER->id);
             }
         }
 
-        $scores = $scores->get()->map(function ($score) use ($class) {
+        $scores = $scores->get();
+        $links = $links->get();
+
+        $groupByUser = $scores->groupBy('student_id');
+
+        foreach ($groupByUser as $studentId => $score) {
+            $get = collect($links)->whereNotIn('linked_id', $score->pluck('linked_id')->toArray());
+            if ($get->isNotEmpty()) {
+                foreach ($get as $item) {
+                    $scores->push((object)[
+                        'id' => null,
+                        'score' => null,
+                        'student_id' => $studentId,
+                        'linked_id' => $item->linked_id,
+                        'type' => $request->get('type'),
+                        'name' => $item->name,
+                        'subject_id' => $item->subject_id,
+                        'teacher_id' => $item->teacher_id
+                    ]);
+                }
+            }
+        }
+
+        $scores = $scores->map(function ($score) use ($class) {
             if ($this->_USER->isAdmin()) {
                 $score->show_actions = true;
             } else if ($this->_USER->isTeacher()) {

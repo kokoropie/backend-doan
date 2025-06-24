@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Dashboard\AdminController;
 use App\Http\Controllers\Api\SemesterController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\UserScoreController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->middleware(['role:admin'])->group(function () {
@@ -30,4 +31,6 @@ Route::prefix('admin')->name('admin.')->middleware(['role:admin'])->group(functi
     Route::apiResource('users', UserController::class);
     Route::put('users/{user}/password', [UserController::class, 'changePassword'])->name('users.change-password');
     Route::post('users/{user}/class', [UserController::class, 'changeClass'])->name('users.change-class');
+
+    Route::apiResource('users.scores', UserScoreController::class)->only('index');
 });
