@@ -97,7 +97,8 @@ class AdminController extends Controller
         $to = now()->setYear($year)->endOfYear();
         $feedbacks = Feedback::whereBetween('created_at', [$from, $to])
             ->groupByRaw('MONTH(created_at)')
-            ->count();
+            ->selectRaw('COUNT(*) as count, MONTH(created_at) as month')
+            ->pluck('count', 'month');
 
         $return = [];
         for ($i = 1; $i <= 12; $i++) {
