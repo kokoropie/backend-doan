@@ -92,7 +92,7 @@ class AdminController extends Controller
 
     public function feedback()
     {
-        $year = request()->has('year') ? request()->get('year') : now()->year;
+        $year = (int) (request()->has('year') ? request()->get('year') : now()->year);
         $from = now()->setYear($year)->startOfYear();
         $to = now()->setYear($year)->endOfYear();
         $feedbacks = Feedback::whereBetween('created_at', [$from, $to])
