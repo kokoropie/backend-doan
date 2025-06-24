@@ -37,5 +37,6 @@ Route::prefix('admin')->name('admin.')->middleware(['role:admin'])->group(functi
 
     Route::apiResource('users.scores', UserScoreController::class)->only('index');
 
+    Route::post('notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
     Route::apiResource('notifications', NotificationController::class);
 });

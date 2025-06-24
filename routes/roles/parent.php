@@ -18,5 +18,6 @@ Route::prefix('parent')->name('parent.')->middleware(['role:parent'])->group(fun
     Route::apiResource('users', UserController::class)->only(['index', 'show']);
     Route::apiResource('classes.subjects', ClassSubjectController::class)->only(['index', 'show']);
     Route::apiResource('users.scores', UserScoreController::class)->only('index');
+    Route::post('notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
     Route::apiResource('notifications', NotificationController::class)->only(['index', 'show', 'update']);
 });
